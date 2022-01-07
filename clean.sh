@@ -1,0 +1,17 @@
+rm -rf ./truth/*:*:*.dat
+rm -rf ./truth/truth.dat
+rm -rf ./obs/*:*:*.dat
+rm -rf ./fsc/*
+rm -rf ./bgd/*
+rm -rf ./ana/*
+rm -rf ./letkf/*:*:*.dat
+rm -rf ./letkf/ana_*.dat
+rm -rf ./letkf/obs_*.dat
+rm -rf ./letkf/bgd_*.dat
+rm -rf ./letkf/letkf*.dat
+rm -rf ./dig/*:*:*.dat 
+rm -rf ./ini/*:*:*.dat
+rm -rf ./ini/bgd.dat
+rm -rf ./ini/ini.dat
+rm -rf ./ctl/ctl.dat
+rm -rf ./ctl/*:*:*.dat
