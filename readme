@@ -1,0 +1,28 @@
+1. ini: dir that contains a cold start initialization for an ensemble of
+        initital inputs
+
+2. truth: dir that contains an truth created from a base run of the base model.
+        This program will use an initial input and integrate the model with 
+        time, output at some regular interval as the truth benchmark.
+
+3. obs: dir contains the obs data that are created by running obs.exe. This 
+        program will read the truth and add some perturbed white noise to
+        the truth to mimic the real obs.
+
+4. model: contains the shallow water equation model
+
+5. letkf: contains the assimilation code that performs a data assimilation
+        process.
+
+6. ana: contains the analysis output
+
+7. fsc: contains the forecast for each cycle.
+
+8. ctl: contains the base run with no assimilation. This is needed to compare
+        the roles of assimilation.
+
+9. dig: contains some diagnostic calculations
+
+10.bgd: contains the background backup after each assimilating cycle. 
+
+11.utils: contains some ultility programs that do intermediate steps
