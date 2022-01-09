@@ -195,6 +195,18 @@
          ENDIF
        ENDDO
      ENDDO
+   ELSEIF (obs_flag.eq.2) THEN
+     id = nint(icen+1.0)
+     jd = nint(jcen+1.0)
+     DO i = 1,nx
+       DO j = 1,ny
+         IF(i.ne.id.and.j.ne.jd) THEN
+           ur(i,j) = -99999
+           vr(i,j) = -99999 
+           zr(i,j) = -99999
+         ENDIF
+       ENDDO
+     ENDDO 
    ENDIF
    WRITE(91,rec=irec)((ur(i,j),i=1,nx),j=1,ny)
    irec     = irec + 1
