@@ -168,6 +168,15 @@
        ENDDO
      ENDDO
      PRINT*,'Actual num of obs points with obs_flag = 1 is: ',i-1,no  
+   ELSEIF (obs_flag.eq.2) THEN
+     PRINT*,'Generating a single obs at icen+1,jcen+1 = ',icen+1,jcen+1
+     id = nint(icen+1.0)
+     jd = nint(jcen+1.0)
+     WRITE(72,'(2I5,3E12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
+     IF (no.ne.1) THEN
+        PRINT*,'A single obs point with obs_flag = 2 must have no=1:',no
+        STOP 
+     ENDIF
    ELSE
      PRINT*,'obs.exe: not support for other obs_flag yet...stop'
      STOP

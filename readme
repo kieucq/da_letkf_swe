@@ -3,6 +3,12 @@ that uses the LETKF algorithm. The system is designed for the pedagogical
 purposes, and no support is warranted. Users will take full responsibility 
 for their use, so long as it is not for the commercial purposes.
 
+NOTE: 
+1. The system only supports PGI Fortran compiler at the moment. 
+2. The SWE model has a hard-wired (nx,ny). Need to make it more flexible
+3. Only a certain type of OSSE designs are supported (see run/run_letkf.sh)
+
+Dir structureL
 1. ini: dir that contains a cold start initialization for an ensemble of
         initital inputs
 

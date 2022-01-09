@@ -46,9 +46,9 @@ history="L"                     # long or short history
 t_window=0                      # 4D DA window [s] - must be equal 0 for LETKF
 dt_window=1                     # obs frequency in each 4D DA cycle [s] - must be 1 for LETKF 
 mpi_run="N"                     # MPI option for LETKF
-osse=1                          # option for obs osse design: 0-all grid point (no=nx*ny)
+osse=2                          # option for obs osse design: 0-all grid point (no=nx*ny)
                                 #                             1-vortex obs around (icen,jcen)
-                                #                             2-a single obs at (icen,jcen)
+                                #                             2-a single obs at (icen+1,jcen+1)
 echo "SUMMARY OF LETKF CONFIGURATION"
 echo "==========================================================="
 echo " Forecast time is                                : $nt"
@@ -89,7 +89,7 @@ ifactor      = 0.1             ! inflation factor to increase model error
 nme          = 0               ! number of ensemble member for model error calculation
 timeout      = 100             ! output interval for the model (steps)
 tlm_flag     = 1               ! option for the TLM model: 1-first order, 2-second order
-no           = 100             ! number of local observation
+no           = 1               ! number of local observation
 ne           = ${nensemble}              ! number of ensemble members for LETKF
 nxl          = 5               ! size of the local patch
 slat         = 10.             ! start latitude
