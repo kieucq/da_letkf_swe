@@ -600,7 +600,7 @@ c
       ihour     = ifix ((time-iday*86400.)/3600.)                                   
       imin      = ifix ((time-iday*86400.-ihour*3600.)/60.)                         
       write (6,1000) iday, ihour, imin                                   
- 1000 format(10x,' day =',i5,2x,' hour =',i5,2x,' min =',i5,)                  
+ 1000 format(10x,' day =',i5,2x,' hour =',i5,2x,' min =',i5)                  
       endif                                                 
 11100 continue                                                                  
       return                                                                    

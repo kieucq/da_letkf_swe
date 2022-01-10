@@ -1,10 +1,22 @@
 #!/bin/sh
+# NOTE: This sciprt compiles the whle SWE-LETKF system. It requires 
+#       a fortran compiler and several internal libs. The only Fortran
+#       compilers that havve been tested so far are ifort and PGI.
+#
+# AUTH: Chanh Kieu (ckieu@iu.edu)
+#=====================================================================
+set -x
 MAIN_DIR=/N/u/ckieu/Karst/model/da_letkf_swe
-FC="pgf90"
+FC="ifort"
+#FC="pgf90"
 MFC="mpif90"
 FCFLAG="-traceback"
 INC="$MAIN_DIR/registry"
 MPI="No"
+if [ $MPI == "Yes" ] && [ $FC != "pgf90" ]; then
+   echo "MPI mode can only work with PGI ...stop"
+   exit 1
+fi
 #
 # compiling diagnostic directory
 #
@@ -25,9 +37,12 @@ $FC $FCFLAG -c matrix_inv.f90
 $FC $FCFLAG -c common_mtx.f90
 if [ $MPI == "Yes" ]; then
    $MFC $FCFLAG -c common_mpi.f90
-   $MFC $FCFLAG -o letkf_mpi.exe letkf_mpi.f90 common_mtx.f90 common.f90 mt19937ar.f90 netlib.f matrix_inv.f90 common_mpi.f90
+   $MFC $FCFLAG -o letkf_mpi.exe letkf_mpi.f90 common_mtx.f90      \ 
+                   common.f90 mt19937ar.f90 netlib.f               \
+                   matrix_inv.f90 common_mpi.f90
 else
-   $FC $FCFLAG -o letkf_serial.exe letkf_serial.f90 common_mtx.f90 common.f90 mt19937ar.f90 netlib.f matrix_inv.f90
+   $FC $FCFLAG -o letkf_serial.exe letkf_serial.f90 common_mtx.f90 \
+                  common.f90 mt19937ar.f90 netlib.f matrix_inv.f90
 fi
 #
 # compiling ctl directory
@@ -72,8 +87,14 @@ echo "Compiling in dir: ini"
 cd $MAIN_DIR/ini
 rm -rf *.exe *.o *.mod
 $FC $FCFLAG -c mt19937ar.f90
-$FC $FCFLAG -o ini.exe ini.f90 mt19937ar.f90
+$FC $FCFLAG -o ini_letkf.exe ini_letkf.f90 mt19937ar.f90
 $FC $FCFLAG -o bgd.exe bgd.f
 cd ../
 ls -la */*.exe
+check_compile=`ls -la */*.exe | wc -l`
+if [ $check_compile == 10 ]; then
+    echo "Compilation is successful"
+else
+    echo "Compilation failed. Check again"
+fi
 echo "DONE INSTALLING"

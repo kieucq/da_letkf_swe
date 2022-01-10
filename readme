@@ -1,14 +1,35 @@
-This is the data assimilation system designed for the shallow water equation
-that uses the LETKF algorithm. The system is designed for the pedagogical
-purposes, and no support is warranted. Users will take full responsibility 
+NOTE:
+This is the data assimilation system for the shallow water equation
+that uses the LETKF algorithm. The system is designed solely for pedagogical
+purposes, and so no support is provided. Users will take full responsibility 
 for their use, so long as it is not for the commercial purposes.
 
-NOTE: 
-1. The system only supports PGI Fortran compiler at the moment. 
-2. The SWE model has a hard-wired (nx,ny). Need to make it more flexible
+REMARK: 
+1. The system only supports PGI/Intel Fortran compiler at the moment. For
+        MPI run, only PGI is supported. 
+2. The SWE model has a hard-wired (nx,ny). Need to make it more flexible.
+        This SWE model is taken as it is from the textbook by Krishnamurthy.
 3. Only a certain type of OSSE designs are supported (see run/run_letkf.sh)
+4. Intel fortram compiler has a much longer runtime as compared to PGI!!!
 
-Dir structureL
+AUTH: Chanh Kieu, emai: ckieu@iu.edu. Tel: 812-856-5704 (C)
+
+INSTALLATION:
+1. Edit the installation file: install.sh and select the Fortran compiler
+        as well as the main directory that contains this system.
+2. Type: sh ./install.sh. A successful compilation should produce 10 exe
+        file. Any missing executable files would give an error message.
+
+HOW TO RUN:
+1. Go to "run" 
+2. Edit run_letkf.sh to choose the options for DA cycling settings as well
+        as LETKF namelist configuration 
+3. Run: sh ./run_letkf.sh
+4. Go to "dig" and check some diagnostic analysis (see, e.g., ana.txt or
+        ana.ctl for graphical output)
+
+
+DIRECTORY STRUCTURE
 1. ini: dir that contains a cold start initialization for an ensemble of
         initital inputs
 
