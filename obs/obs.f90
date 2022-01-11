@@ -20,6 +20,7 @@
   INTEGER           :: iday,ihour,imin,obs_flag,ne,itime,ntime
   INTEGER           :: id,jd,i,j,k,irec,debug,no,nt,out_flag,nprint
   REAL              :: t_window,dt_window
+  REAL              :: u1,v1,z1
   INTEGER           :: icen,jcen
   OPEN(91,file='obs.dat',access='direct',form='unformatted',recl=nx*ny*4)
 !
@@ -154,7 +155,7 @@
         id    = nx
         jd    = jd - 1
        endif 
-       WRITE(72,'(2I5,3E12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
+       WRITE(72,'(2I5,3F12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
      ENDDO
    ELSEIF (obs_flag.eq.1) THEN
      PRINT*,'Generating obs around TC center icen,jcen = ',icen,jcen  
@@ -162,7 +163,7 @@
      DO id = icen-nint(sqrt(no*1.0)/2),icen+nint(sqrt(no*1.0)/2)
        DO jd = jcen-nint(sqrt(no*1.0)/2),jcen+nint(sqrt(no*1.0)/2)
          IF (i.le.no.and.id.ge.1.and.id.le.nx.and.jd.ge.1.and.jd.le.ny) THEN
-           WRITE(72,'(2I5,3E12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
+           WRITE(72,'(2I5,3F12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
            i = i + 1
          ENDIF
        ENDDO
@@ -172,11 +173,59 @@
      PRINT*,'Generating a single obs at icen+1,jcen+1 = ',icen+1,jcen+1
      id = nint(icen+1.0)
      jd = nint(jcen+1.0)
-     WRITE(72,'(2I5,3E12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
+     WRITE(72,'(2I5,3F12.4)')id,jd,ur(id,jd),vr(id,jd),zr(id,jd)
      IF (no.ne.1) THEN
         PRINT*,'A single obs point with obs_flag = 2 must have no=1:',no
         STOP 
      ENDIF
+   ELSEIF (obs_flag.eq.3) THEN
+     PRINT*,'Generating a batch of 5 obs downstream of icen,jcen = ',icen+1,jcen+1
+     id = icen-10
+     jd = jcen
+     u1 = 0.5*(ur(id,jd)+ur(id+1,jd)) 
+     v1 = 0.5*(vr(id,jd)+vr(id+1,jd))
+     z1 = 0.5*(zr(id,jd)+zr(id+1,jd))
+     WRITE(72,'(10F12.4)')id+0.5,jd*1.0,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id+1,jd)+ur(id,jd+1)+ur(id+1,jd+1))
+     v1 = 0.25*(vr(id,jd)+vr(id+1,jd)+vr(id,jd+1)+vr(id+1,jd+1))
+     z1 = 0.25*(zr(id,jd)+zr(id+1,jd)+zr(id,jd+1)+zr(id+1,jd+1))
+     WRITE(72,'(10F12.4)')id+0.5,jd+0.5,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id+1,jd)+ur(id,jd-1)+ur(id+1,jd-1))
+     v1 = 0.25*(vr(id,jd)+vr(id+1,jd)+vr(id,jd-1)+vr(id+1,jd-1))
+     z1 = 0.25*(zr(id,jd)+zr(id+1,jd)+zr(id,jd-1)+zr(id+1,jd-1))
+     WRITE(72,'(10F12.4)')id+0.5,jd-0.5,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id-1,jd)+ur(id,jd+1)+ur(id-1,jd+1))
+     v1 = 0.25*(vr(id,jd)+vr(id-1,jd)+vr(id,jd+1)+vr(id-1,jd+1))
+     z1 = 0.25*(zr(id,jd)+zr(id-1,jd)+zr(id,jd+1)+zr(id-1,jd+1))
+     WRITE(72,'(10F12.4)')id-0.5,jd+0.5,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id-1,jd)+ur(id,jd-1)+ur(id-1,jd-1))
+     v1 = 0.25*(vr(id,jd)+vr(id-1,jd)+vr(id,jd-1)+vr(id-1,jd-1))
+     z1 = 0.25*(zr(id,jd)+zr(id-1,jd)+zr(id,jd-1)+zr(id-1,jd-1))
+     WRITE(72,'(10F12.4)')id-0.5,jd-0.5,u1,v1,z1
+   ELSEIF (obs_flag.eq.4) THEN
+     PRINT*,'Generating a batch of 5 obs upstream of icen,jcen = ',icen+1,jcen+1
+     id = icen+10
+     jd = jcen
+     u1 = 0.5*(ur(id,jd)+ur(id+1,jd))
+     v1 = 0.5*(vr(id,jd)+vr(id+1,jd))
+     z1 = 0.5*(zr(id,jd)+zr(id+1,jd))
+     WRITE(72,'(10F12.4)')id+0.5,jd*1.0,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id+1,jd)+ur(id,jd+1)+ur(id+1,jd+1))
+     v1 = 0.25*(vr(id,jd)+vr(id+1,jd)+vr(id,jd+1)+vr(id+1,jd+1))
+     z1 = 0.25*(zr(id,jd)+zr(id+1,jd)+zr(id,jd+1)+zr(id+1,jd+1))
+     WRITE(72,'(10F12.4)')id+0.5,jd+0.5,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id+1,jd)+ur(id,jd-1)+ur(id+1,jd-1))
+     v1 = 0.25*(vr(id,jd)+vr(id+1,jd)+vr(id,jd-1)+vr(id+1,jd-1))
+     z1 = 0.25*(zr(id,jd)+zr(id+1,jd)+zr(id,jd-1)+zr(id+1,jd-1))
+     WRITE(72,'(10F12.4)')id+0.5,jd-0.5,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id-1,jd)+ur(id,jd+1)+ur(id-1,jd+1))
+     v1 = 0.25*(vr(id,jd)+vr(id-1,jd)+vr(id,jd+1)+vr(id-1,jd+1))
+     z1 = 0.25*(zr(id,jd)+zr(id-1,jd)+zr(id,jd+1)+zr(id-1,jd+1))
+     WRITE(72,'(10F12.4)')id-0.5,jd+0.5,u1,v1,z1
+     u1 = 0.25*(ur(id,jd)+ur(id-1,jd)+ur(id,jd-1)+ur(id-1,jd-1))
+     v1 = 0.25*(vr(id,jd)+vr(id-1,jd)+vr(id,jd-1)+vr(id-1,jd-1))
+     z1 = 0.25*(zr(id,jd)+zr(id-1,jd)+zr(id,jd-1)+zr(id-1,jd-1))
+     WRITE(72,'(10F12.4)')id-0.5,jd-0.5,u1,v1,z1
    ELSE
      PRINT*,'obs.exe: not support for other obs_flag yet...stop'
      STOP

@@ -160,6 +160,10 @@
   goto 2
 3 print*,'letkf.exe: reading obs returns',i,' data points'
   close(90)
+  if (no.eq.0) then
+     print*,'Observation data is empty... Nothing to do. Quit here'
+     stop
+  endif
   if (i.ne.no) then
      print*,'letkf.exe: actual # of data points differ from no. Reset no'
      no = i-1

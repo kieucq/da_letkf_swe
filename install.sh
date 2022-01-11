@@ -7,8 +7,8 @@
 #=====================================================================
 set -x
 MAIN_DIR=/N/u/ckieu/Karst/model/da_letkf_swe
-FC="ifort"
-#FC="pgf90"
+#FC="ifort"
+FC="pgf90"
 MFC="mpif90"
 FCFLAG="-traceback"
 INC="$MAIN_DIR/registry"
