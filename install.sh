@@ -8,6 +8,7 @@
 set -x
 MAIN_DIR=/N/u/ckieu/Karst/model/da_letkf_swe
 #FC="ifort"
+#MFC="/N/u/ckieu/Quartz/local/libs/openmpi-4.0.1-intel/bin/mpif90"
 FC="pgf90"
 MFC="mpif90"
 FCFLAG="-traceback"
