@@ -129,7 +129,8 @@
    print*,'WARNING: CANNOT HAVE BOTH INFLATION AND PERTURBED FORCING...STOP'
    stop
   endif
-  open(92,file='letkf.dat',access='direct',form='unformatted',recl=nx*ny*4)
+  open(92,file='letkf.dat',access='direct',form='unformatted',recl=nx*ny)
+  open(93,file='letkf.txt')
   ng            = nx*ny  
   np            = nxl*nxl*3
 !
@@ -178,18 +179,21 @@
    tem2d1(nint(olon(i)),nint(olat(i))) = uo(i)
   enddo
   write(92,rec=irec)((tem2d1(i,j),i=1,nx),j=1,ny)
+  write(93,'(114F13.3)')((tem2d1(i,j),i=1,nx),j=1,ny)
   irec          = irec + 1
   tem2d1        = mis
   do i          = 1,no
    tem2d1(nint(olon(i)),nint(olat(i))) = vo(i)
   enddo
   write(92,rec=irec)((tem2d1(i,j),i=1,nx),j=1,ny)
+  write(93,'(114F13.3)')((tem2d1(i,j),i=1,nx),j=1,ny)
   irec          = irec + 1
   tem2d1        = mis
   do i          = 1,no
    tem2d1(nint(olon(i)),nint(olat(i))) = zo(i)
   enddo
   write(92,rec=irec)((tem2d1(i,j),i=1,nx),j=1,ny)
+  write(93,'(114F13.3)')((tem2d1(i,j),i=1,nx),j=1,ny)
   irec          = irec + 1
   deallocate(tem2d1)
 !
@@ -218,14 +222,17 @@
   if (ie.lt.ne) goto 8
   do ie          = 1,ne
    write(92,rec=irec)((ub(i,j,ie),i=1,nx),j=1,ny)
+   write(93,'(114F13.3)')((ub(i,j,ie),i=1,nx),j=1,ny)
    irec          = irec + 1
   enddo
   do ie          = 1,ne 
    write(92,rec=irec)((vb(i,j,ie),i=1,nx),j=1,ny)
+   write(93,'(114F13.3)')((vb(i,j,ie),i=1,nx),j=1,ny)
    irec          = irec + 1
   enddo
   do ie          = 1,ne
    write(92,rec=irec)((zb(i,j,ie),i=1,nx),j=1,ny)
+   write(93,'(114F13.3)')((zb(i,j,ie),i=1,nx),j=1,ny)
    irec          = irec + 1
   enddo
 !
@@ -366,14 +373,17 @@
 !
   do ie          = 1,ne
    write(92,rec=irec)((ua(i,j,ie),i=1,nx),j=1,ny)
+   write(93,'(114F13.3)')((ua(i,j,ie),i=1,nx),j=1,ny)
    irec          = irec + 1
   enddo
   do ie          = 1,ne 
    write(92,rec=irec)((va(i,j,ie),i=1,nx),j=1,ny)
+   write(93,'(114F13.3)')((va(i,j,ie),i=1,nx),j=1,ny)
    irec          = irec + 1
   enddo
   do ie          = 1,ne
    write(92,rec=irec)((za(i,j,ie),i=1,nx),j=1,ny)
+   write(93,'(114F13.3)')((za(i,j,ie),i=1,nx),j=1,ny)
    irec          = irec + 1
   enddo
   print*,'letkf.exe: LETKF finishes safely...!'

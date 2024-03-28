@@ -35,7 +35,7 @@
 #
 # set up namelist options
 #
-main_dir="/N/u/ckieu/Karst/model/da_letkf_swe"
+main_dir="/N/u/ckieu/Quartz/model/da_letkf_swe/"
 ninterval=3                     # DA window/restart interval [h]  
 nensemble=30                    # number of ensemble members 
 restart="Y"                     # fresh run opt from begining with truth ref
@@ -46,22 +46,23 @@ history="L"                     # long or short history
 t_window=0                      # 4D DA window [s] - must be equal 0 for LETKF
 dt_window=1                     # obs frequency in each 4D DA cycle [s] - must be 1 for LETKF 
 mpi_run="N"                     # MPI option for LETKF
-osse=4                          # option for obs osse design: 0-all grid point (no=nx*ny)
-                                #                             1-vortex obs around (icen,jcen)
-                                #                             2-a single obs at (icen+1,jcen+1)
-                                #                             3-a pbatch of obs downstream of (icen,jcen)
-                                #                             4-a pbatch of obs upstream of (icen,jcen)
+osse=1                          # option for obs osse design: 
+                                #   0 - all grid point (no=nx*ny)
+                                #   1 - vortex obs around (icen,jcen)
+                                #   2 - a single obs at (icen+1,jcen+1)
+                                #   3 - a pbatch of obs downstream of (icen,jcen)
+                                #   4 - a pbatch of obs upstream of (icen,jcen)
 echo "SUMMARY OF LETKF CONFIGURATION"
 echo "==========================================================="
-echo " Forecast time is                                : $nt"
-echo " Number of cycles that the script will run is    : $ncycle"
-echo " Number of the ensemble members for this test is : $nensemble"
-echo " Interval for doing the analysis is              : $ninterval"
-echo " Cold start option is                            : $cold_start"
-echo " Re-start option is                              : $restart"
-echo " MPI-RUN option is                               : $mpi_run"
-echo " OSSE observational option is                    : $osse"
-echo " History option is (L-long; S-short)             : $history"       
+echo "Forecast time is                                : $nt"
+echo "Number of cycles that the script will run is    : $ncycle"
+echo "Number of the ensemble members for this test is : $nensemble"
+echo "Interval for doing the analysis is              : $ninterval"
+echo "Cold start option is                            : $cold_start"
+echo "Re-start option is                              : $restart"
+echo "MPI-RUN option is                               : $mpi_run"
+echo "OSSE observational option is                    : $osse"
+echo "History option is (L-long; S-short)             : $history"       
 echo "==========================================================="
 #if [ $history == "L" ]; then
 #   set -x
@@ -91,7 +92,7 @@ ifactor      = 0.1             ! inflation factor to increase model error
 nme          = 0               ! number of ensemble member for model error calculation
 timeout      = 100             ! output interval for the model (steps)
 tlm_flag     = 1               ! option for the TLM model: 1-first order, 2-second order
-no           = 5               ! number of local observation
+no           = 100             ! number of local observation
 ne           = ${nensemble}              ! number of ensemble members for LETKF
 nxl          = 5               ! size of the local patch
 slat         = 10.             ! start latitude
@@ -160,34 +161,34 @@ id=0
 ih=0
 mm="00"
 if [ "$ih" -lt 10 ]; then
- hh="0$ih"
+   hh="0$ih"
 elif [ "$ih" -lt 24 ]; then
- hh="$ih"
+   hh="$ih"
 else 
- echo "-> hour index calculation is incorrect ...exit 1"
- exit 1
+   echo "-> hour index calculation is incorrect ...exit 1"
+   exit 1
 fi
 if [ "$id" -lt 10 ]; then
- dd="0$id"
+   dd="0$id"
 elif [ "$id" -lt 100 ]; then
- dd="$id"
+   dd="$id"
 else
- echo "-> day index calculation is out of range 100 days ...exit 2"
- exit 2
+   echo "-> day index calculation is out of range 100 days ...exit 2"
+   exit 2
 fi
 ofile="$dd:$hh:$mm"
 if [ "$cold_start" = "T" ]; then
- echo "Creating an ensemble of initial cold start ..."
- cd ${main_dir}/ini/
- cp ${main_dir}/run/namelist.swe ./
- rm -rf bgd_*:* ini.dat
- ./ini_letkf.exe > ${main_dir}/run/log.ini
- cd ${main_dir}/bgd
- if [ -d ${ofile} ]; then
-  rm -rf ${ofile} 
- fi
- mkdir ${ofile}
- mv ${main_dir}/ini/bgd_*.dat ./${ofile}/
+   echo "Creating an ensemble of initial cold start ..."
+   cd ${main_dir}/ini/
+   cp ${main_dir}/run/namelist.swe ./
+   rm -rf bgd_*:* ini.dat
+   ./ini_letkf.exe > ${main_dir}/run/log.ini
+   cd ${main_dir}/bgd
+   if [ -d ${ofile} ]; then
+      rm -rf ${ofile} 
+   fi
+   mkdir ${ofile}
+   mv ${main_dir}/ini/bgd_*.dat ./${ofile}/
 fi
 #
 # running a control with no assimilation for comparsion
@@ -205,176 +206,176 @@ rtime=0
 echo "Perfoming the LETKF cycle run now ..."
 while [ "$icycle" -le "$ncycle" ]
 do
- echo "====== CYCLE: ${icycle}th @ $ofile ========"
-#
-# checking the background data first
-#
- echo "checking background data ..."
- rm -rf ${main_dir}/letkf/bgd_*.dat ${main_dir}/utils/mem_*.dat
- ie=1
- while [ "$ie" -le "$nensemble" ]
- do
-  if [ "$ie" -lt 10 ]; then
-   imember="_00$ie"
-  elif [ "$ie" -lt 100 ]; then
-   imember="_0$ie"
-  elif [ "$ie" -lt 1000 ]; then
-   imember="_$ie"
-  else
-   echo " TO MANY MEMBER...exit 10"
-   exit 10
-  fi
-  bgdfile="bgd$imember"_"$ofile.dat"
-  if [ -f "${main_dir}/bgd/$ofile/$bgdfile" ]; then
-   #  echo " Background file $bgdfile exists...linking"
-   ln -sf ${main_dir}/bgd/$ofile/$bgdfile ${main_dir}/letkf/bgd$imember.dat
-   ln -sf ${main_dir}/bgd/$ofile/$bgdfile ${main_dir}/utils/mem$imember.dat
-  else
-   echo " -> background file $bgdfile does not exist...exit 2"
-   exit 2
-  fi
-  ie=$(($ie + 1))
- done
-#
-# checking the observation data now
-#
- echo "linking observational file ..."
- obsfile="obs_$ofile.dat"
- if [ -f "${main_dir}/obs/$obsfile" ]; then
-  echo "obs $obsfile file exists ...linking"
-  rm -rf ${main_dir}/letkf/obs.dat
-  ln -sf ${main_dir}/obs/$obsfile ${main_dir}/letkf/obs.dat
- else
-  echo " -> obs file $obsfile does not exist. exit 3"
-  exit 3
- fi
-#
-# perform the LETKF assimilation now and compute the ensemble
-# mean for the background now.
-#
- echo "LETKF is being called ..."
- cd ${main_dir}/letkf/
- cp ${main_dir}/run/namelist.swe ./
- rm -rf ana_*.dat
- if [ "$mpi_run" == "Y" ]; then
-  time mpirun -np 2 ./letkf_mpi.exe >& ${main_dir}/run/log.letkf
- else
-  time ./letkf_serial.exe >& ${main_dir}/run/log.letkf
- fi
- cd ${main_dir}/utils
- ./mean.exe > ${main_dir}/run/log.utils
- mv mean.dat ${main_dir}/dig/bgd_$ofile.dat
- mv spread.dat ${main_dir}/dig/spb_$ofile.dat
-#
-# running the model now
-#
- ie=1
- if [ -d ${main_dir}/fsc/${ofile} ]; then
-  rm -rf ${main_dir}/fsc/${ofile}
- fi
- mkdir ${main_dir}/fsc/${ofile}
- if [ -d ${main_dir}/ana/${ofile} ]; then
-  rm -rf ${main_dir}/ana/${ofile}
- fi
- mkdir ${main_dir}/ana/${ofile}
- cp ${main_dir}/run/namelist.swe ${main_dir}/model/
- while  [ "$ie" -le "$nensemble" ]
- do
-  echo "running swe.exe for member ${ie} ..."
-#
-# creat an extension for the member first
-#
-  if [ "$ie" -lt 10 ]; then
-   imember="_00$ie"
-  elif [ "$ie" -lt 100 ]; then
-   imember="_0$ie"
-  else
-   imember="_$ie"
-  fi
-  cd ${main_dir}/model/
-  rm -rf ./ana.dat
-  ln -sf ${main_dir}/letkf/ana$imember.dat ./ana.dat
-  cd ${main_dir}/model/
-  ./swe.exe > ${main_dir}/run/log.swe
-#
-# add the member extention to the output from the model runs. Also
-# backup the analysis output at each each
-#
-  fscfile="fsc$imember"_"$ofile.dat"
-  bgdfile="bgd$imember.dat"
-  anafile="ana$imember"_"$ofile.dat"
-  #echo " swe.dat will be renamed as $fscfile ..."
-  #echo " bgd.dat will be renamed as $bgdfile ..."
-  mkdir -p ${main_dir}/fsc/${ofile}/mem${imember}
-  mv -f swe.dat ${main_dir}/fsc/${ofile}/mem${imember}/
-  mv -f fsc_*:*.dat ${main_dir}/fsc/${ofile}/mem${imember}/
-  mv -f bgd_t001.dat ./$bgdfile
-  mv -f ${main_dir}/letkf/ana$imember.dat ${main_dir}/ana/${ofile}/$anafile 
-  ln -sf ${main_dir}/ana/${ofile}/$anafile ${main_dir}/utils/mem$imember.dat
-  ie=$(($ie + 1))
- done
- rm -rf ana.dat
-#
-# compute the ensemble mean for the analysis now
-#
- cd ${main_dir}/utils/
- ./mean.exe >> ${main_dir}/run/log.utils
- mv mean.dat ${main_dir}/dig/ana_$ofile.dat
- mv spread.dat ${main_dir}/dig/spa_$ofile.dat
- rm mem_*.dat
-#
-# update the next cycle now
-#
- icycle=$(($icycle+1))
- rtime=$(($rtime+$ninterval))
-#
-# update the background at the next cycle now
-#
- if [ "$rtime" -lt 24 ]; then
-  ih=$rtime
- else
-  ih=$(($rtime-24))
-  id=$(($id+1))
-  rtime=$(($rtime-24))
- fi
- if [ "$ih" -lt 10 ]; then
-  hh="0$ih"
- elif [ "$ih" -lt 24 ]; then
-  hh="$ih"
- else
-  echo " hour index calculation is incorrect ...exit 1"
-  exit 1
- fi 
- if [ "$id" -lt 10 ]; then
-  dd="0$id"
- elif [ "$id" -lt 100 ]; then
-  dd="$id"
- else
-  echo " day index calculation is out of range 100 days ...exit 2"
-  exit 2
- fi
- ofile="$dd:$hh:$mm"
- if [ -d ${main_dir}/bgd/${ofile} ]; then
-  rm -rf ${main_dir}/bgd/${ofile}
- fi
- mkdir ${main_dir}/bgd/${ofile}
- echo "new processing time is $ofile"
- ie=1
- while  [ "$ie" -le "$nensemble" ]
- do
-   if [ "$ie" -lt 10 ]; then
-    imember="_00$ie"
-   elif [ "$ie" -lt 100 ]; then
-    imember="_0$ie"
+   echo "====== CYCLE: ${icycle}th @ $ofile ========"
+   #
+   # checking the background data first
+   #
+   echo "checking background data ..."
+   rm -rf ${main_dir}/letkf/bgd_*.dat ${main_dir}/utils/mem_*.dat
+   ie=1
+   while [ "$ie" -le "$nensemble" ]
+   do
+      if [ "$ie" -lt 10 ]; then
+         imember="_00$ie"
+      elif [ "$ie" -lt 100 ]; then
+         imember="_0$ie"
+      elif [ "$ie" -lt 1000 ]; then
+         imember="_$ie"
+      else
+         echo " TO MANY MEMBER...exit 10"
+         exit 10
+      fi
+      bgdfile="bgd$imember"_"$ofile.dat"
+      if [ -f "${main_dir}/bgd/$ofile/$bgdfile" ]; then
+       #  echo " Background file $bgdfile exists...linking"
+         ln -sf ${main_dir}/bgd/$ofile/$bgdfile ${main_dir}/letkf/bgd$imember.dat
+         ln -sf ${main_dir}/bgd/$ofile/$bgdfile ${main_dir}/utils/mem$imember.dat
+      else
+         echo " -> background file $bgdfile does not exist...exit 2"
+         exit 2
+      fi
+      ie=$(($ie + 1))
+   done
+   #
+   # checking the observation data now
+   #
+   echo "linking observational file ..."
+   obsfile="obs_$ofile.dat"
+   if [ -f "${main_dir}/obs/$obsfile" ]; then
+      echo "obs $obsfile file exists ...linking"
+      rm -rf ${main_dir}/letkf/obs.dat
+      ln -sf ${main_dir}/obs/$obsfile ${main_dir}/letkf/obs.dat
    else
-    imember="_$ie"
+      echo " -> obs file $obsfile does not exist. exit 3"
+      exit 3
    fi
-   bgdfile="bgd$imember"_"$ofile.dat"
-   #  echo " background for the next analysis is $bgdfile"
-   mv ${main_dir}/model/bgd$imember.dat ${main_dir}/bgd/$ofile/$bgdfile
-   ie=$(($ie+1))
- done
- echo ""
+   #
+   # perform the LETKF assimilation now and compute the ensemble
+   # mean for the background now.
+   #
+   echo "LETKF is being called ..."
+   cd ${main_dir}/letkf/
+   cp ${main_dir}/run/namelist.swe ./
+   rm -rf ana_*.dat
+   if [ "$mpi_run" == "Y" ]; then
+      time mpirun -np 2 ./letkf_mpi.exe >& ${main_dir}/run/log.letkf
+   else
+      time ./letkf_serial.exe >& ${main_dir}/run/log.letkf
+   fi
+   cd ${main_dir}/utils
+   ./mean.exe > ${main_dir}/run/log.utils
+   mv mean.dat ${main_dir}/dig/bgd_$ofile.dat
+   mv spread.dat ${main_dir}/dig/spb_$ofile.dat
+   #
+   # running the model now
+   #
+   ie=1
+   if [ -d ${main_dir}/fsc/${ofile} ]; then
+      rm -rf ${main_dir}/fsc/${ofile}
+   fi
+   mkdir ${main_dir}/fsc/${ofile}
+   if [ -d ${main_dir}/ana/${ofile} ]; then
+      rm -rf ${main_dir}/ana/${ofile}
+   fi
+   mkdir ${main_dir}/ana/${ofile}
+   cp ${main_dir}/run/namelist.swe ${main_dir}/model/
+   while  [ "$ie" -le "$nensemble" ]
+   do
+      echo "running swe.exe for member ${ie} ..."
+      #
+      # creat an extension for the member first
+      #
+      if [ "$ie" -lt 10 ]; then
+         imember="_00$ie"
+      elif [ "$ie" -lt 100 ]; then
+         imember="_0$ie"
+      else
+         imember="_$ie"
+      fi
+      cd ${main_dir}/model/
+      rm -rf ./ana.dat
+      ln -sf ${main_dir}/letkf/ana$imember.dat ./ana.dat
+      cd ${main_dir}/model/
+      ./swe.exe > ${main_dir}/run/log.swe
+      #
+      # add the member extention to the output from the model runs. Also
+      # backup the analysis output at each each
+      #
+      fscfile="fsc$imember"_"$ofile.dat"
+      bgdfile="bgd$imember.dat"
+      anafile="ana$imember"_"$ofile.dat"
+      #echo " swe.dat will be renamed as $fscfile ..."
+      #echo " bgd.dat will be renamed as $bgdfile ..."
+      mkdir -p ${main_dir}/fsc/${ofile}/mem${imember}
+      mv -f swe.dat ${main_dir}/fsc/${ofile}/mem${imember}/
+      mv -f fsc_*:*.dat ${main_dir}/fsc/${ofile}/mem${imember}/
+      mv -f bgd_t001.dat ./$bgdfile
+      mv -f ${main_dir}/letkf/ana$imember.dat ${main_dir}/ana/${ofile}/$anafile 
+      ln -sf ${main_dir}/ana/${ofile}/$anafile ${main_dir}/utils/mem$imember.dat
+      ie=$(($ie + 1))
+   done
+   rm -rf ana.dat
+   #
+   # compute the ensemble mean for the analysis now
+   #
+   cd ${main_dir}/utils/
+   ./mean.exe >> ${main_dir}/run/log.utils
+   mv mean.dat ${main_dir}/dig/ana_$ofile.dat
+   mv spread.dat ${main_dir}/dig/spa_$ofile.dat
+   rm mem_*.dat
+   #
+   # update the next cycle now
+   #
+   icycle=$(($icycle+1))
+   rtime=$(($rtime+$ninterval))
+   #
+   # update the background at the next cycle now
+   #
+   if [ "$rtime" -lt 24 ]; then
+      ih=$rtime
+   else
+      ih=$(($rtime-24))
+      id=$(($id+1))
+      rtime=$(($rtime-24))
+   fi
+   if [ "$ih" -lt 10 ]; then
+      hh="0$ih"
+   elif [ "$ih" -lt 24 ]; then
+      hh="$ih"
+   else
+      echo " hour index calculation is incorrect ...exit 1"
+      exit 1
+   fi 
+   if [ "$id" -lt 10 ]; then
+      dd="0$id"
+   elif [ "$id" -lt 100 ]; then
+      dd="$id"
+   else
+      echo " day index calculation is out of range 100 days ...exit 2"
+      exit 2
+   fi
+   ofile="$dd:$hh:$mm"
+   if [ -d ${main_dir}/bgd/${ofile} ]; then
+      rm -rf ${main_dir}/bgd/${ofile}
+   fi
+   mkdir ${main_dir}/bgd/${ofile}
+   echo "new processing time is $ofile"
+   ie=1
+   while  [ "$ie" -le "$nensemble" ]
+   do
+      if [ "$ie" -lt 10 ]; then
+         imember="_00$ie"
+      elif [ "$ie" -lt 100 ]; then
+         imember="_0$ie"
+      else
+         imember="_$ie"
+      fi
+      bgdfile="bgd$imember"_"$ofile.dat"
+      #echo " background for the next analysis is $bgdfile"
+      mv ${main_dir}/model/bgd$imember.dat ${main_dir}/bgd/$ofile/$bgdfile
+      ie=$(($ie+1))
+   done
+   echo ""
 done
 #
 # doing some analysis now
