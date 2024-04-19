@@ -1,4 +1,10 @@
-#!/bin/sh
+#!/bin/bash -l
+#SBATCH -N 1
+#SBATCH -t 48:00:00
+#SBATCH -J A594_LETKF_exp
+#SBATCH -p general
+#SBATCH -A r00043
+#SBATCH --mem=128G
 #####################################################################
 #                                                            
 # NOTE: This is to run an assimilation system that performs  
@@ -39,7 +45,7 @@ main_dir="/N/u/ckieu/Quartz/model/da_letkf_swe/"
 ninterval=3                     # DA window/restart interval [h]  
 nensemble=30                    # number of ensemble members 
 restart="Y"                     # fresh run opt from begining with truth ref
-nt=48                           # forecast time for model [h]
+nt=120                           # forecast time for model [h]
 ncycle=$(($nt/$ninterval+1))    # number of DA cycles 
 cold_start="T"                  # cold start option
 history="L"                     # long or short history
@@ -47,11 +53,11 @@ t_window=0                      # 4D DA window [s] - must be equal 0 for LETKF
 dt_window=1                     # obs frequency in each 4D DA cycle [s] - must be 1 for LETKF 
 mpi_run="N"                     # MPI option for LETKF
 osse=1                          # option for obs osse design: 
-                                #   0 - all grid point (no=nx*ny)
-                                #   1 - vortex obs around (icen,jcen)
-                                #   2 - a single obs at (icen+1,jcen+1)
-                                #   3 - a pbatch of obs downstream of (icen,jcen)
-                                #   4 - a pbatch of obs upstream of (icen,jcen)
+                                #   0 - all grid points, with no = nx*ny
+                                #   1 - vortex obs around (icen,jcen), with any no
+                                #   2 - a single obs at (icen+1,jcen+1), no = 1
+                                #   3 - a pbatch of obs downstream of (icen,jcen), with any no
+                                #   4 - a pbatch of obs upstream of (icen,jcen), with any no
 echo "SUMMARY OF LETKF CONFIGURATION"
 echo "==========================================================="
 echo "Forecast time is                                : $nt"
@@ -263,6 +269,7 @@ do
       time ./letkf_serial.exe >& ${main_dir}/run/log.letkf
    fi
    cd ${main_dir}/utils
+   cp ${main_dir}/run/namelist.swe ./
    ./mean.exe > ${main_dir}/run/log.utils
    mv mean.dat ${main_dir}/dig/bgd_$ofile.dat
    mv spread.dat ${main_dir}/dig/spb_$ofile.dat
@@ -378,15 +385,17 @@ do
    echo ""
 done
 #
-# doing some analysis now
+# doing some ensemble analysis now when ncycle > 1
 #
-echo "doing analysis now ..."
-cd ${main_dir}/dig
-cp ${main_dir}/run/namelist.swe ./
-ln -sf ${main_dir}/truth/tru_*:*.dat ./
-ln -sf ${main_dir}/obs/obs_*:*.dat ./
-ln -sf ${main_dir}/ctl/ctl_*:*.dat ./
-./ana.exe > ${main_dir}/run/log.dig
+if [ "$ncycle" -gt 1 ]; then
+    echo "doing analysis now ..."
+    cd ${main_dir}/dig
+    cp ${main_dir}/run/namelist.swe ./
+    ln -sf ${main_dir}/truth/tru_*:*.dat ./
+    ln -sf ${main_dir}/obs/obs_*:*.dat ./
+    ln -sf ${main_dir}/ctl/ctl_*:*.dat ./
+    ./ana.exe > ${main_dir}/run/log.dig
+fi
 cd ${main_dir}/run/
 #
 # cleaning history now
